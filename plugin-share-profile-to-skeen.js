@@ -41,9 +41,9 @@ const Share = async (profile) => {
   const type = await Plugins.picker.single(
     'Sing-box version',
     [
-      { label: 'Sing-box v1.11.0-', value: 'legacy' },
-      { label: 'Sing-box v1.11.0+', value: 'main' },
-      { label: 'Sing-box v1.12.0+', value: 'stable' }
+      { label: 'v1.11.0-', value: 'legacy' },
+      { label: 'v1.11.0+', value: 'main' },
+      { label: 'v1.12.0+', value: 'stable' }
     ],
     ['stable']
   )
@@ -95,7 +95,7 @@ const Share = async (profile) => {
       '```bash\n' +
       `curl -o /opt/etc/skeen/config.json ${ips[0] ? `http://${ips[0]}:${Plugin.Port}` : 'URL'}\n` +
       '```\n\n' +
-      '|Share link | QR code|\n|-|-|\n' +
+      '|Share link|QR code|\n|-|-|\n' +
       urls.map((url) => `|${url.url}|![](${url.qrcode})|`).join('\n'),
     { type: 'markdown' }
   )
@@ -121,6 +121,7 @@ function validateRequiredTags(config) {
       break
     case 'tproxy':
       requiredInboundTags.push('tproxy-in')
+      break
     default:
       requiredInboundTags.push('redirect-in', 'tproxy-in')
   }
@@ -157,7 +158,8 @@ function ensureSKeenInbounds(config) {
         type: 'redirect',
         tag: 'redirect-in',
         listen: '::',
-        listen_port: 2081
+        listen_port: 2081,
+        tcp_fast_open: true
       })
     }
   }

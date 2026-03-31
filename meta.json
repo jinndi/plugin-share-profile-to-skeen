@@ -1,0 +1,48 @@
+[
+   {
+    "id": "plugin-share-profile-to-skeen",
+    "name": "Share configuration to SKeen",
+    "version": "v1.0.0",
+    "description": "Generates a configuration for the Entware sing-box, automatically adding the necessary incoming traffic components (redirect-in/tproxy-in) + Zashboard panel",
+    "tags": ["config", "export", "SKeen"],
+    "type": "Http",
+    "url": "https://raw.githubusercontent.com/jinndi/plugin-share-profile-to-skeen/main/plugin-share-profile-to-skeen.js",
+    "path": "data/plugins/plugin-share-profile-to-skeen.js",
+    "triggers": ["on::manual"],
+    "menus": {},
+    "hasUI": false,
+    "context": {
+      "profiles": {
+        "Share Entware": "Share"
+      },
+      "subscriptions": {},
+      "rulesets": {},
+      "plugins": {},
+      "scheduledtasks": {}
+    },
+    "status": 0,
+    "configuration": [
+      {
+        "id": "ID_ipv6mode",
+        "title": "IPv6 settings",
+        "description": "It is recommended to disable IPv6, otherwise rule set download failures may occur.",
+        "key": "Ipv6Mode",
+        "component": "Radio",
+        "value": "disabled",
+        "options": ["Disabled,disabled", "Enabled,none"]
+      },
+      {
+        "id": "ID_port",
+        "title": "Listening port",
+        "description": "",
+        "key": "Port",
+        "component": "Input",
+        "value": "52777",
+        "options": []
+      }
+    ],
+    "disabled": false,
+    "install": true,
+    "installed": false
+  }
+]
