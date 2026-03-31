@@ -1,6 +1,6 @@
-# Share configuration from GUI.for.SingBox to SKeen
+# Sync plugin configuration from GUI.for.SingBox to SKeen
 <h3 align="center">
-Generates a configuration for the Entware sing-box (SKeen), automatically adding the necessary incoming traffic components (redirect-in/tproxy-in) + Zashboard panel
+Generates an Entware sing-box (SKeen) configuration with required inbound components (redirect-in / tproxy-in) and the Zashboard panel
 </h3>
 
 Plugin link:
