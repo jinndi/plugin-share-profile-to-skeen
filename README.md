@@ -15,5 +15,5 @@ https://raw.githubusercontent.com/jinndi/sync-profile-to-skeen/main/sync-profile
 3. Create and configure a profile step by step in the `Profiles` section
 4. Add the plugin using the link provided above in the `Plugins` section
 5. Run the generated command (`curl`) via SSH in Entware
-6. Make sure the `sub_config` parameter is enabled in the SKeen configuration file `skeen.json`
+6. Make sure the `sing_config.enable` set to 1 in the SKeen configuration (`skeen.json`)
 7. Restart SKeen using the command `skeen restart`
