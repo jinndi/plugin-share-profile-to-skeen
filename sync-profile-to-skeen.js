@@ -1,5 +1,5 @@
 const JS_FILE = 'https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.js'
-const PATH = 'data/third/share-profile-to-skeen'
+const PATH = 'data/third/sync-profile-to-skeen'
 const PORT = 52777
 
 const onRun = async () => {
