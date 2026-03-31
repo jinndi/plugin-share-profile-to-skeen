@@ -21,26 +21,7 @@
       "scheduledtasks": {}
     },
     "status": 0,
-    "configuration": [
-      {
-        "id": "ID_ipv6mode",
-        "title": "IPv6 settings",
-        "description": "It is recommended to disable IPv6, otherwise rule set download failures may occur.",
-        "key": "Ipv6Mode",
-        "component": "Radio",
-        "value": "disabled",
-        "options": ["Disabled,disabled", "Enabled,none"]
-      },
-      {
-        "id": "ID_port",
-        "title": "Listening port",
-        "description": "",
-        "key": "Port",
-        "component": "Input",
-        "value": "52777",
-        "options": []
-      }
-    ],
+    "configuration": [],
     "disabled": false,
     "install": true,
     "installed": false

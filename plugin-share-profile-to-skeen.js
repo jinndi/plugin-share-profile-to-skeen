@@ -1,6 +1,6 @@
 const JS_FILE = 'https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.js'
 const PATH = 'data/third/share-profile-to-skeen'
-let mode = 'tproxy'
+const PORT = 52777
 
 const onRun = async () => {
   const store = Plugins.useProfilesStore()
@@ -28,7 +28,7 @@ const Share = async (profile) => {
 
   await transformLocalRuleset(profile)
 
-  mode = await Plugins.picker.single(
+  const skeenMode = await Plugins.picker.single(
     'SKeen mode',
     [
       { label: 'Redirect', value: 'redirect' },
@@ -36,6 +36,15 @@ const Share = async (profile) => {
       { label: 'Hybrid', value: 'hybrid' }
     ],
     ['tproxy']
+  )
+
+  const ipv6Mode = await Plugins.picker.single(
+    'IPv6 settings',
+    [
+      { label: 'Enabled', value: '1' },
+      { label: 'Disable', value: '0' }
+    ],
+    ['0']
   )
 
   const type = await Plugins.picker.single(
@@ -57,10 +66,10 @@ const Share = async (profile) => {
     _adaptToMain(config)
   }
 
-  ensureSKeenInbounds(config)
+  ensureSKeenInbounds(config, skeenMode)
   replaceClashUIToZashboard(config)
 
-  if (Plugin.Ipv6Mode === 'disabled') {
+  if (ipv6Mode === '0') {
     config.dns.strategy = 'ipv4_only'
     config.dns.rules.forEach((rule) => {
       if (rule.strategy) rule.strategy = 'ipv4_only'
@@ -70,7 +79,7 @@ const Share = async (profile) => {
     })
   }
 
-  const validation = validateRequiredTags(config)
+  const validation = validateRequiredTags(config, skeenMode)
   if (!validation.success) {
     Plugins.alert('Configuration verification failed.', validation.missing.join('\n'))
     return
@@ -79,12 +88,12 @@ const Share = async (profile) => {
   const ips = await getIPAddress()
   const urls = await Promise.all(
     ips.map((ip) => {
-      const url = `http://${ip}:${Plugin.Port}`
+      const url = `http://${ip}:${PORT}`
       return getQRCode(url, url)
     })
   )
 
-  const { close } = await Plugins.StartServer('0.0.0.0:' + Plugin.Port, Plugin.id, async (req, res) => {
+  const { close } = await Plugins.StartServer('0.0.0.0:' + PORT, Plugin.id, async (req, res) => {
     res.end(200, { 'Content-Type': 'application/json; charset=utf-8' }, JSON.stringify(config, null, 2))
   })
 
@@ -93,7 +102,7 @@ const Share = async (profile) => {
     '### SKeen Configuration Sharing\n\n' +
       '在 Download for SSH using command：\n\n' +
       '```bash\n' +
-      `curl -o /opt/etc/skeen/config.json ${ips[0] ? `http://${ips[0]}:${Plugin.Port}` : 'URL'}\n` +
+      `curl -o /opt/etc/skeen/config.json ${ips[0] ? `http://${ips[0]}:${PORT}` : 'URL'}\n` +
       '```\n\n' +
       '|Share link|QR code|\n|-|-|\n' +
       urls.map((url) => `|${url.url}|![](${url.qrcode})|`).join('\n'),
@@ -113,9 +122,9 @@ const onUninstall = async () => {
   return 0
 }
 
-function validateRequiredTags(config) {
+function validateRequiredTags(config, skeenMode) {
   const requiredInboundTags = []
-  switch(mode){
+  switch(skeenMode){
     case 'redirect':
       requiredInboundTags.push('redirect-in')
       break
@@ -144,7 +153,7 @@ function replaceClashUIToZashboard(config) {
   }
 }
 
-function ensureSKeenInbounds(config) {
+function ensureSKeenInbounds(config, skeenMode) {
   if (!config.inbounds) {
     config.inbounds = []
   }
@@ -152,7 +161,7 @@ function ensureSKeenInbounds(config) {
   const filterInbound = (type) => config.inbounds.filter((i) => i.type === type)
   const existingTags = config.inbounds.map((inbound) => inbound.tag)
 
-  if (['redirect', 'hybrid'].includes(mode)){
+  if (['redirect', 'hybrid'].includes(skeenMode)){
     if (!existingTags.includes('redirect-in')) {
       config.inbounds.push({
         type: 'redirect',
@@ -164,7 +173,7 @@ function ensureSKeenInbounds(config) {
     }
   }
 
-  if(['tproxy', 'hybrid'].includes(mode)){
+  if(['tproxy', 'hybrid'].includes(skeenMode)){
     if (!existingTags.includes('tproxy-in')) {
       config.inbounds.push({
         type: 'tproxy',
@@ -173,7 +182,7 @@ function ensureSKeenInbounds(config) {
         listen_port: 2082,
         udp_timeout: "3m0s",
         udp_fragment: true,
-        ...(mode === 'hybrid' ? {network: "udp"} : {tcp_fast_open: true})
+        ...(skeenMode === 'hybrid' ? {network: "udp"} : {tcp_fast_open: true})
       })
     }
   }
