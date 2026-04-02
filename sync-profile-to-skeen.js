@@ -175,6 +175,18 @@ function ensureSKeenInbounds(config, skeenMode) {
       )
     })
 
+  config.outbounds
+    .filter(o => o.type === 'vless' && o.tls.reality && !o.tls.utls)
+    .forEach(o => {
+      o.tls = {
+        ...o.tls,
+        utls: {
+          enabled: true,
+          fingerprint: "chrome"
+        }
+      }
+    })   
+
   if (!config.dns) {
     config.dns = { servers: [], rules: [] }
   }
