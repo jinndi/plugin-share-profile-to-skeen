@@ -10,7 +10,7 @@ const onRun = async () => {
     profile = store.profiles[0]
   } else {
     profile = await Plugins.picker.single(
-      'Please select the profile you want to share',
+      'Please select profile',
       store.profiles.map((v) => ({
         label: v.name,
         value: v
@@ -24,115 +24,32 @@ const onRun = async () => {
 const Share = async (profile) => {
   await transformLocalRuleset(profile)
 
-  const skeenMode = await Plugins.picker.single(
-    'SKeen mode',
-    [
-      { label: 'Redirect', value: 'redirect' },
-      { label: 'TProxy', value: 'tproxy' },
-      { label: 'Hybrid', value: 'hybrid' }
-    ],
-    ['tproxy']
-  )
+  const options = await openSettingsModal()
+  if (!options) return 
 
-  const ipv6Mode = await Plugins.picker.single(
-    'IPv6 settings',
-    [
-      { label: 'Enabled', value: '1' },
-      { label: 'Disable', value: '0' }
-    ],
-    ['0']
-  )
+  const config = await Plugins.generateConfig(profile, 'stable')
 
-  let config = await Plugins.generateConfig(profile, 'stable')
-
-  ensureSKeenInbounds(config, skeenMode)
-  replaceClashUIToZashboard(config)
-
-  if (ipv6Mode === '0') {
-    config.dns.strategy = 'ipv4_only'
-    config.dns.rules.forEach((rule) => {
-      if (rule.strategy) rule.strategy = 'ipv4_only'
-    })
-    config.route.rules.forEach((rule) => {
-      if (rule.strategy) rule.strategy = 'ipv4_only'
-    })
-  }
-
-  const validation = validateRequiredTags(config, skeenMode)
-  if (!validation.success) {
-    Plugins.alert('Configuration verification failed.', validation.missing.join('\n'))
-    return
-  }
+  ensureConfig(config, options)
 
   const ips = await getIPAddress()
-  const urls = await Promise.all(
-    ips.map((ip) => {
-      return { url: `http://${ip}:${PORT}`}
-    })
-  )
+  const urls = await Promise.all(ips.map((ip) => `http://${ip}:${PORT}`))
 
   const { close } = await Plugins.StartServer('0.0.0.0:' + PORT, Plugin.id, async (req, res) => {
     res.end(200, { 'Content-Type': 'application/json; charset=utf-8' }, JSON.stringify(config, null, 2))
   })
 
-  await Plugins.alert(
-    Plugin.name,
-    '# SKeen Sync\n\n' +
-      '### Entware SSH command\n\n' +
-      '```bash\n' +
-      `skeen sync ${ips[0] ? `http://${ips[0]}:${PORT}` : 'URL'}\n` +
-      '```\n\n' +
-      '### WEB CLI command\n\n' +
-      '```bash\n' +
-      `exec skeen sync ${ips[0] ? `http://${ips[0]}:${PORT}` : 'URL'}\n` +
-      '```\n\n' +
-      '### Share links\n\n' +
-      urls.map((url) => `- ${url.url}`).join('\n'),
-    { type: 'markdown' }
-  )
+  await openShareModal(ips, urls)
+  
   close()
 }
 
-
-function validateRequiredTags(config, skeenMode) {
-  const requiredInboundTags = []
-  switch(skeenMode){
-    case 'redirect':
-      requiredInboundTags.push('redirect-in')
-      break
-    case 'tproxy':
-      requiredInboundTags.push('tproxy-in')
-      break
-    default:
-      requiredInboundTags.push('redirect-in', 'tproxy-in')
-  }
-
-  const missing = []
-
-  const inboundTags = (config.inbounds || []).map((i) => i.tag)
-  for (const tag of requiredInboundTags) {
-    if (!inboundTags.includes(tag)) {
-      missing.push(`inbound: ${tag}`)
-    }
-  }
-
-  return { success: missing.length === 0, missing }
-}
-
-function replaceClashUIToZashboard(config) {
-  if (config.experimental?.clash_api) {
-    config.experimental.clash_api.external_ui_download_url = 'https://gh-proxy.com/https://github.com/Zephyruso/zashboard/releases/latest/download/dist-no-fonts.zip'
-  }
-}
-
-function ensureSKeenInbounds(config, skeenMode) {
+function ensureConfig(config, options) {
+  //// inbounds
   if (!config.inbounds) {
     config.inbounds = []
   }
-
   const existingTags = config.inbounds.map((inbound) => inbound.tag)
-
-  if (['redirect', 'hybrid'].includes(skeenMode)){
+  if (['redirect', 'hybrid'].includes(options.skeenMode)){
     if (!existingTags.includes('redirect-in')) {
       config.inbounds.push({
         type: 'redirect',
@@ -143,8 +60,7 @@ function ensureSKeenInbounds(config, skeenMode) {
       })
     }
   }
-
-  if(['tproxy', 'hybrid'].includes(skeenMode)){
+  if(['tproxy', 'hybrid'].includes(options.skeenMode)){
     if (!existingTags.includes('tproxy-in')) {
       config.inbounds.push({
         type: 'tproxy',
@@ -153,18 +69,17 @@ function ensureSKeenInbounds(config, skeenMode) {
         listen_port: 65082,
         udp_timeout: "3m0s",
         udp_fragment: true,
-        ...(skeenMode === 'hybrid' ? {network: "udp"} : {tcp_fast_open: true})
+        ...(options.skeenMode === 'hybrid' ? {network: "udp"} : {tcp_fast_open: true})
       })
     }
   }
-
   const disableTUNRoutes = tun => {
     tun.auto_route = false
     tun.strict_route = false
   }
   config.inbounds.filter((i) => i.type === 'tun').forEach(disableTUNRoutes)
 
-
+  //// outbounds
   const allowedNaiveTlsKeys = ['enabled', 'server_name', 'ech']
   config.outbounds
     .filter(o => o.type === 'naive' && o.tls)
@@ -174,7 +89,6 @@ function ensureSKeenInbounds(config, skeenMode) {
           .filter(([key]) => allowedNaiveTlsKeys.includes(key))
       )
     })
-
   config.outbounds
     .filter(o => o.type === 'vless' && o.tls.reality && !o.tls.utls)
     .forEach(o => {
@@ -187,24 +101,33 @@ function ensureSKeenInbounds(config, skeenMode) {
       }
     })   
 
+  //// dns
   if (!config.dns) {
     config.dns = { servers: [], rules: [] }
   }
   if (!config.dns.servers) {
     config.dns.servers = []
   }
-
   if (!config.dns.rules) {
     config.dns.rules = []
   }
+  if (options.ipv6Mode === '0') {
+    config.dns.strategy = 'ipv4_only'
+    config.dns.rules.forEach((rule) => {
+      if (rule.strategy) rule.strategy = 'ipv4_only'
+    })
+    config.route.rules.forEach((rule) => {
+      if (rule.strategy) rule.strategy = 'ipv4_only'
+    })
+  }
 
+  //// route
   if (!config.route) {
     config.route = { rules: [] }
   }
   if (!config.route.rules) {
     config.route.rules = []
   }
-
   const sniffRuleIndex = config.route.rules.findIndex((rule) => rule.action === 'sniff')
   const newSniffRule = { action: 'sniff' }
   if (sniffRuleIndex === -1) {
@@ -215,7 +138,6 @@ function ensureSKeenInbounds(config, skeenMode) {
     }
     config.route.rules[sniffRuleIndex] = {...newSniffRule, ...config.route.rules[sniffRuleIndex]}
   }
-
   const hijackDnsRuleIndex = config.route.rules.findIndex((rule) => rule.action === 'hijack-dns')
   const newHijackDnsRule = {
     type: 'logical',
@@ -223,13 +145,17 @@ function ensureSKeenInbounds(config, skeenMode) {
     rules: [{ port: 53 }, { protocol: 'dns' }],
     action: 'hijack-dns'
   }
-
   if (hijackDnsRuleIndex !== -1) {
     config.route.rules[hijackDnsRuleIndex] = newHijackDnsRule
   } else {
     const sniffRuleIndex = config.route.rules.findIndex((rule) => rule.action === 'sniff')
     const insertIndex = sniffRuleIndex !== -1 ? sniffRuleIndex + 1 : 0
     config.route.rules.splice(insertIndex, 0, newHijackDnsRule)
+  }
+
+  //// experimental
+  if (config.experimental?.clash_api) {
+    config.experimental.clash_api.external_ui_download_url = 'https://gh-proxy.com/https://github.com/Zephyruso/zashboard/releases/latest/download/dist-no-fonts.zip'
   }
 }
 
@@ -294,4 +220,158 @@ async function getIPAddress() {
     return 3
   }
   return [...new Set(ips)].sort((a, b) => getPriority(a) - getPriority(b))
+}
+
+
+async function openSettingsModal() {
+  return new Promise((resolve) => {
+    const modalComponent = {
+      data() {
+        return {
+          skeenMode: 'tproxy',
+          ipv6Mode: '0'
+        }
+      },
+      methods: {
+        onConfirm() {
+          resolve({ skeenMode: this.skeenMode, ipv6Mode: this.ipv6Mode })
+          modal.destroy()
+        },
+        onCancel() {
+          resolve(null) 
+          modal.destroy()
+        }
+      },
+      template: `
+        <div class="p-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <h5>Mode</h5>
+            <Radio v-model="skeenMode" :options="skeenOptions" />
+          </div>
+          <div class="flex items-center justify-between">
+            <h5>IPv6</h5>
+            <Radio v-model="ipv6Mode" :options="ipv6Options" />
+          </div>
+          <div class="flex justify-end space-x-2" style="margin: 30px auto 10px auto;">
+            <Button class="m-2" type="text" @click="onCancel">Cancel</Button>
+            <Button class="m-2" type="primary" @click="onConfirm">Create</Button>
+          </div>
+        </div>
+      `,
+      computed: {
+        skeenOptions() {
+          return [
+            { label: 'Redirect', value: 'redirect' },
+            { label: 'TProxy', value: 'tproxy' },
+            { label: 'Hybrid', value: 'hybrid' }
+          ]
+        },
+        ipv6Options() {
+          return [
+            { label: 'Enabled', value: '1' },
+            { label: 'Disable', value: '0' }
+          ]
+        }
+      }
+    }
+
+    const modal = Plugins.modal(
+      {
+        title: 'Settings',
+        width: '50',
+        footer: false,
+        maskClosable: false
+      },
+      { default: () => Vue.h(modalComponent) }
+    )
+
+    modal.open()
+  })
+}
+
+
+function openShareModal(ips, urls) {
+  return new Promise((resolve) => {
+    const cmd1 = `skeen sync ${ips[0] ? `http://${ips[0]}:${PORT}` : 'URL'}`
+    const cmd2 = `exec ${cmd1}`
+
+    const component = Vue.defineComponent({
+      template: `
+        <div class="p-4 space-y-4">
+          <!-- Entware SSH command -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h5>Entware SSH command</h5>
+              <pre class="bg-gray-50 p-2 rounded">{{ cmd1 }}</pre>
+            </div>
+            <div>
+              <Button type="primary" @click="copy(cmd1)">Copy</Button>
+            </div>
+          </div>
+          <hr>
+          <!-- WEB CLI command -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h5>WEB CLI command</h5>
+              <pre class="bg-gray-50 p-2 rounded">{{ cmd2 }}</pre>
+            </div>
+            <div>
+              <Button type="primary" @click="copy(cmd2)">Copy</Button>
+            </div>
+          </div>
+          <hr>
+          <!-- Share links -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h5>Share links</h5>
+              <div v-for="url in urls" :key="url.url">
+                <pre class="bg-gray-50 p-2 rounded mb-1">{{ url }}</pre>
+              </div>
+            </div>
+            <div>
+              <Button type="primary" @click="copyAll">Copy All</Button>
+            </div>
+          </div>
+        </div>
+      `,
+      setup() {
+        const copy = (text)  => {
+          const ta = document.createElement('textarea')
+          ta.value = text
+          document.body.appendChild(ta)
+          ta.select()
+          document.execCommand('copy')
+          document.body.removeChild(ta)
+          Plugins.message.success('Copied!')
+        }
+
+        const copyAll = () => {
+          const allText = [...urls].join('\n')
+          copy(allText)
+        }
+
+        return { cmd1, cmd2, urls, copy, copyAll }
+      }
+    })
+
+    const modal = Plugins.modal(
+      { 
+        title: 'SKeen Sync', 
+        width: '50', 
+        footer: false, 
+        maskClosable: false
+      },
+      { 
+        default: () => Vue.h(component),     
+        toolbar: () => [
+          Vue.h(Vue.resolveComponent("Button"), {
+            type: "text",
+            icon: "close",
+            onClick: () => {resolve(); modal.destroy()}
+          })
+        ]
+      }
+    )
+    modal.open()
+  })
 }
