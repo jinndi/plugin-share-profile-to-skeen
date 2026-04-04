@@ -114,6 +114,16 @@ function ensureConfig(config, options) {
   if (!config.dns.rules) {
     config.dns.rules = []
   }
+  const fakeipServer = config.dns.servers.find((s) => s.type === 'fakeip')
+  if (fakeipServer){
+    if(fakeipServer.inet4_range) fakeipServer.inet4_range = '198.18.0.0/15'
+    if(options.ipv6Mode === '0' && fakeipServer.inet6_range){
+      delete fakeipServer.inet6_range
+    }else{
+      fakeipServer.inet6_range = 'fc00::/18'
+    }
+  }
+
   if (options.ipv6Mode === '0') {
     config.dns.strategy = 'ipv4_only'
     config.dns.rules.forEach((rule) => {
