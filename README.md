@@ -4,7 +4,12 @@
 
 Generates a sing-box configuration for SKeen based on a GUI.for.SingBox profile, including the necessary inbound components (**redirect-in** / **tproxy-in**) and the **Zashboard** panel.
 
-<img width="466" height="415" alt="SKeen Sync" src="https://github.com/user-attachments/assets/f346d5bc-913e-45e1-ade1-046510197a02" />
+<img width="695" height="454" alt="edit" src="https://github.com/user-attachments/assets/0a876bc1-a1d8-4a28-a760-62c3844fc763" />
+<img width="695" height="454" alt="sync" src="https://github.com/user-attachments/assets/99b658f1-3cfc-48b8-ae3f-ca6e9a9dad5f" />
+<img width="695" height="454" alt="main" src="https://github.com/user-attachments/assets/15a791c5-f446-418b-a4f7-517062161410" />
+
+<br>
+
 
 Plugin link:
 
