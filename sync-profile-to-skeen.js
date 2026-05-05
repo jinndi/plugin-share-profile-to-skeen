@@ -1,5 +1,5 @@
 /**
- * Plugin for syncing profiles from GUI.for.SingBox to SKenn
+ * Plugin for syncing profiles from GUI.for.SingBox to SKeen
  */
 
 const PORT = 52777
