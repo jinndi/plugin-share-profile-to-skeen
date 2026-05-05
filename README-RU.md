@@ -5,7 +5,7 @@
 Генерирует конфигурацию sing-box для SKeen на основе профиля GUI.for.SingBox, включая необходимые входящие компоненты (**redirect-in** / **tproxy-in**) и панель **Zashboard**.
 
 
-<img width="695" height="454" alt="edit" src="https://github.com/user-attachments/assets/0a876bc1-a1d8-4a28-a760-62c3844fc763" />
+<img width="695" height="550" alt="edit" src="https://github.com/user-attachments/assets/0a876bc1-a1d8-4a28-a760-62c3844fc763" />
 <img width="695" height="454" alt="sync" src="https://github.com/user-attachments/assets/99b658f1-3cfc-48b8-ae3f-ca6e9a9dad5f" />
 <img width="695" height="454" alt="main" src="https://github.com/user-attachments/assets/15a791c5-f446-418b-a4f7-517062161410" />
 
