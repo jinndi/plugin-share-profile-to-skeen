@@ -432,7 +432,7 @@ export default async (Plugin) => {
       let modal
       try {
         modal = Plugins.modal({
-          title: 'SKenn Sync',
+          title: 'SKeen Sync',
           minWidth: '50',
           width: '70',
           submit: false,
