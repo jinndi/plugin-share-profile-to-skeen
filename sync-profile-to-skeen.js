@@ -117,7 +117,6 @@ export default async (Plugin) => {
     config.outbounds.filter(o => o.type === 'naive' && o.tls).forEach(o => {
       o.tls = Object.fromEntries(Object.entries(o.tls).filter(([k]) => naiveKeys.includes(k)))
     })
-
     config.outbounds
     .filter(o => o.type === 'vless' && o.tls?.reality && !o.tls?.utls?.enabled)
     .forEach(o => {
@@ -129,6 +128,30 @@ export default async (Plugin) => {
         } 
       }
     })
+    
+    config.outbounds = config.outbounds.filter(o => {
+      if (o.flow === 'xtls-rprx-vision-udp443') return false 
+      if (o.transport?.type === 'grpc') return false
+      if (o.tls?.enabled && o.tls?.insecure) return false
+      return true
+    })
+
+    let changed = true
+    while (changed) {
+      const beforeCount = config.outbounds.length
+      const validTags = new Set(config.outbounds.map(o => o.tag))
+
+      config.outbounds = config.outbounds.filter(o => {
+        if (['selector', 'urltest'].includes(o.type) && o.outbounds) {
+          o.outbounds = o.outbounds.filter(tag => validTags.has(tag) || ['direct', 'block'].includes(tag))
+
+          return o.outbounds.length > 0
+        }
+        return true
+      })
+
+      changed = config.outbounds.length !== beforeCount
+    }
 
     const sniffIdx = config.route.rules.findIndex(r => r.action === 'sniff')
     const newSniff = { action: 'sniff' }
