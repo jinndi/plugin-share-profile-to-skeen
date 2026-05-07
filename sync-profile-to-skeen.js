@@ -128,8 +128,9 @@ export default async (Plugin) => {
         } 
       }
     })
-    
+
     config.outbounds = config.outbounds.filter(o => {
+      if (o.server === '127.0.0.1' || o.server === 'localhost') return false
       if (o.flow === 'xtls-rprx-vision-udp443') return false 
       if (o.transport?.type === 'grpc') return false
       if (o.tls?.enabled && o.tls?.insecure) return false
