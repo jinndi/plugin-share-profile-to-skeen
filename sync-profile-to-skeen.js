@@ -359,8 +359,20 @@ export default async (Plugin) => {
           }
         },
         template: `
-          <div>
-            <div v-if="step === 'settings'" style="padding: 5px; display: flex; flex-direction: column; gap: 10px;">
+          <div v-if="step === 'settings'" style="
+            display: flex; 
+            flex-direction: column; 
+            max-height: 80vh;
+            position: relative;
+          ">
+            <div style="
+              flex: 1; 
+              overflow-y: auto; 
+              padding: 10px 10px 0 10px; 
+              display: flex; 
+              flex-direction: column; 
+              gap: 10px;
+            ">
               <Card title="Firewall Mode" style="margin-bottom: 0; padding: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                   <div class="text-12">Add matching inbounds</div>
@@ -374,15 +386,13 @@ export default async (Plugin) => {
                 </div>
               </Card>
               <Card title="DNS redirect" style="margin-bottom: 0; padding: 8px;">
-                <div>
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="text-12">Add <code>dns-in</code> inbound</div>
-                    <div><Radio v-model="dnsInbound.enable" :options="enableOptions" /></div>
-                  </div>
-                  <div v-if="dnsInbound.enable" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div><h5>Port</h5></div>
-                    <div><Input v-model="dnsInbound.port" type="number" :min="1" :max="65535" /></div>
-                  </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div class="text-12">Add <code>dns-in</code> inbound</div>
+                  <div><Radio v-model="dnsInbound.enable" :options="enableOptions" /></div>
+                </div>
+                <div v-if="dnsInbound.enable" style="display: flex; justify-content: space-between; align-items: center;">
+                  <div><h5>Port</h5></div>
+                  <div><Input v-model="dnsInbound.port" type="number" :min="1" :max="65535" /></div>
                 </div>
               </Card>
               <Card title="DNS reverse mapping" style="margin-bottom: 20px; padding: 8px;">
@@ -391,62 +401,80 @@ export default async (Plugin) => {
                   <div><Radio v-model="dnsReverseMapping" :options="enableOptions" /></div>
                 </div>
               </Card>
-              <div style="display: flex; gap: 12px; justify-content: flex-end; padding: 8px;">
-                <Button type="text" @click="onSettingsCancel">Cancel</Button>
-                <Button type="primary" icon="play" @click="confirmSettings">Create</Button>
+              <div style="padding-bottom: 10px;"></div>
+            </div>
+            <div style="
+              flex-shrink: 0; 
+              display: flex; 
+              gap: 12px; 
+              justify-content: flex-end; 
+              padding: 12px 16px;
+              background: inherit;
+            ">
+              <Button type="text" @click="onSettingsCancel">Cancel</Button>
+              <Button type="primary" icon="play" @click="confirmSettings">Create</Button>
+            </div>
+          </div>
+          <div v-else style="padding: 5px; display: flex; flex-direction: column; gap: 10px;">
+            <Card title="Entware SSH Command" style="margin-bottom: 0; padding: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="flex: 1;">
+                  <div>
+                    <pre><code class="select-text font-bold">skeen sync {{ ips[0] ? 'http://' + ips[0] + ':' + PORT : 'URL' }}</code></pre>
+                  </div>
+                </div>
+                <div style="margin-left: 16px;">
+                  <Button type="primary" icon="copy" @click="copy('skeen sync ' + (ips[0] ? 'http://' + ips[0] + ':' + PORT : 'URL'))">Copy</Button>
+                </div>
               </div>
-            </div>
-            <div v-else style="padding: 5px; display: flex; flex-direction: column; gap: 10px;">
-              <Card title="Entware SSH Command" style="margin-bottom: 0; padding: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div style="flex: 1;">
-                    <div>
-                      <pre><code class="select-text font-bold">skeen sync {{ ips[0] ? 'http://' + ips[0] + ':' + PORT : 'URL' }}</code></pre>
-                    </div>
-                  </div>
-                  <div style="margin-left: 16px;">
-                    <Button type="primary" icon="copy" @click="copy('skeen sync ' + (ips[0] ? 'http://' + ips[0] + ':' + PORT : 'URL'))">Copy</Button>
+            </Card>
+            <Card title="Web CLI Command" style="margin-bottom: 0; padding: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="flex: 1;">
+                  <div>
+                    <pre><code class="select-text font-bold">exec skeen sync {{ ips[0] ? 'http://' + ips[0] + ':' + PORT : 'URL' }}</code></pre>
                   </div>
                 </div>
-              </Card>
-              <Card title="Web CLI Command" style="margin-bottom: 0; padding: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div style="flex: 1;">
-                    <div>
-                      <pre><code class="select-text font-bold">exec skeen sync {{ ips[0] ? 'http://' + ips[0] + ':' + PORT : 'URL' }}</code></pre>
-                    </div>
-                  </div>
-                  <div style="margin-left: 16px;">
-                    <Button type="primary" icon="copy" @click="copy('exec skeen sync ' + (ips[0] ? 'http://' + ips[0] + ':' + PORT : 'URL'))">Copy</Button>
-                  </div>
+                <div style="margin-left: 16px;">
+                  <Button type="primary" icon="copy" @click="copy('exec skeen sync ' + (ips[0] ? 'http://' + ips[0] + ':' + PORT : 'URL'))">Copy</Button>
                 </div>
-              </Card>
-              <Card style="margin-bottom: 20px; padding: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div><h5>Configuration</h5></div>
-                  <div style="display: flex; gap: 8px;">
-                    <Button type="primary" icon="copy" size="small" style="background-color: #445d6d;" @click="copyConfigUrl">Copy URL</Button>
-                    <Button type="primary" icon="copy" size="small" style="background-color: #445d6d;" @click="copyConfigJson">Copy JSON</Button>
-                    <Button type="primary" icon="edit" size="small" @click="openCodeModal">Edit</Button>
-                  </div>
+              </div>
+            </Card>
+            <Card style="margin-bottom: 20px; padding: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div><h5>Configuration</h5></div>
+                <div style="display: flex; gap: 8px;">
+                  <Button type="primary" icon="copy" size="small" style="background-color: #445d6d;" @click="copyConfigUrl">Copy URL</Button>
+                  <Button type="primary" icon="copy" size="small" style="background-color: #445d6d;" @click="copyConfigJson">Copy JSON</Button>
+                  <Button type="primary" icon="edit" size="small" @click="openCodeModal">Edit</Button>
                 </div>
-              </Card>
-            </div>
-            <div v-if="showCodeModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999;" @click.self="showCodeModal = false">
-              <div style="background-color: #343434; border: 1px solid #445d6d; width: 800px; max-width: 90vw; max-height: 80vh; display: flex; flex-direction: column;">
-                <div style="padding: 16px; border-bottom: 1px solid #4d4d4d; display: flex; justify-content: space-between; align-items: center;">
-                  <h3 style="margin: 0;">Edit configuration</h3>
-                  <Button type="text" icon="close" @click="showCodeModal = false" />
+              </div>
+            </Card>
+          </div>
+          <div
+            v-if="showCodeModal" 
+            style="
+              background: var(--modal-bg); 
+              box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05); 
+              position: fixed; top: 50%; left: 50%; 
+              transform: translate(-50%, -50%); 
+              z-index: 9999;" 
+              @click.self="showCodeModal = false
+            "
+          >
+            <div style="width: 800px; max-width: 90vw; max-height: 80vh; display: flex; flex-direction: column;">
+              <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0;">Edit configuration</h3>
+                <Button type="text" icon="close" @click="showCodeModal = false" />
+              </div>
+              <div style="flex: 1; overflow: auto; padding: 20px;">
+                <div style="width: 800px; min-width: 800px;">
+                  <CodeViewer v-model="editedConfig" lang="json" :editable="true" />
                 </div>
-                <div style="flex: 1; overflow: auto; padding: 20px;">
-                  <div style="width: 800px; min-width: 800px;">
-                    <CodeViewer v-model="editedConfig" lang="json" :editable="true" />
-                  </div>
-                </div>
-                <div style="padding: 16px; border-top: 1px solid #4d4d4d; display: flex; justify-content: flex-end; gap: 8px;">
-                  <Button type="text" @click="showCodeModal = false">Cancel</Button>
-                  <Button type="primary" @click="saveEditedConfig">Save</Button>
-                </div>
+              </div>
+              <div style="padding: 16px; display: flex; justify-content: flex-end; gap: 8px;">
+                <Button type="text" @click="showCodeModal = false">Cancel</Button>
+                <Button type="primary" @click="saveEditedConfig">Save</Button>
               </div>
             </div>
           </div>
