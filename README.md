@@ -20,7 +20,7 @@ https://raw.githubusercontent.com/jinndi/sync-profile-to-skeen/main/sync-profile
 ### Usage in GUI.for.SingBox:
 
 1. Install and run [GUI.for.SingBox](https://github.com/GUI-for-Cores/GUI.for.SingBox).
-2. Add JSON subscription(s) in the **Subscriptions** section (for example, via [s-ui](https://github.com/alireza0/s-ui)). To use other subscription types, including those that require HWID, first install the `plugin-node-convert` plugin from the **Plugin Center** within the app.
+2. Add JSON subscription(s) in the **Subscriptions** section (e.g., via [s-ui](https://github.com/admin8800/s-ui)) or any other kind, including those requiring HWID.
 3. Create and configure your profile step-by-step in the **Profiles** section.
 4. Add the plugin in the **Plugins** section using the link provided above.
 5. Execute the generated command via SSH in Entware or via the router's WEB CLI (using the `parse` button).
