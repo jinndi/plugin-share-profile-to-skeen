@@ -20,7 +20,7 @@ https://raw.githubusercontent.com/jinndi/sync-profile-to-skeen/main/sync-profile
 ### Usage in GUI.for.SingBox:
 
 1. Install and run [GUI.for.SingBox](https://github.com/GUI-for-Cores/GUI.for.SingBox).
-2. Add sing-box JSON subscription(s) in the **Subscriptions** section (e.g., via [s-ui](https://github.com/admin8800/s-ui) or [Sub-Store](https://github.com/jinndi/Sub-Store-Docker))
+2. Add sing-box JSON subscription(s) in the **Subscriptions** section (e.g., via [s-ui](https://github.com/alireza0/s-ui) or [Sub-Store](https://github.com/jinndi/Sub-Store-Docker))
 3. Create and configure your profile step-by-step in the **Profiles** section.
 4. Add the plugin in the **Plugins** section using the link provided above.
 5. Execute the generated command via SSH in Entware or via the router's WEB CLI (using the `parse` button).

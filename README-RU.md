@@ -20,7 +20,7 @@ https://raw.githubusercontent.com/jinndi/sync-profile-to-skeen/main/sync-profile
 ### Использование в GUI.for.SingBox:
 
 1. Установите и запустите [GUI.for.SingBox](https://github.com/GUI-for-Cores/GUI.for.SingBox).
-2. Добавьте sing-box JSON-подписку(и) в разделе **Subscriptions** (например, через [s-ui](https://github.com/admin8800/s-ui) либо [Sub-Store](https://github.com/jinndi/Sub-Store-Docker))
+2. Добавьте sing-box JSON-подписку(и) в разделе **Subscriptions** (например, через [s-ui](https://github.com/alireza0/s-ui) либо [Sub-Store](https://github.com/jinndi/Sub-Store-Docker))
 3. Создайте и настройте шаг за шагом профиль в разделе **Profiles**.
 4. Добавьте плагин в разделе **Plugins**, используя ссылку, указанную выше.
 5. Выполните сгенерированную команду через SSH в Entware или через WEB CLI (parse).
