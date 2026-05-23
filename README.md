@@ -27,7 +27,7 @@ https://raw.githubusercontent.com/jinndi/sync-profile-to-skeen/main/sync-profile
 6. Ensure that the `"sing_config.enable"` parameter is set to `1` in the SKeen configuration (`skeen.json`).
 7. Restart SKeen using the SSH command `skeen restart` or via the WEB CLI `exec skeen restart`.
 
-#### Q: The application crashes instantly with `SIGSEGV: segmentation violation` (inside `cgo` or `gtk_main`). How to fix this?
+#### Q: On Linux, the GUI.for.SingBox application crashes on startup with a `SIGSEGV: segmentation violation` error (pointing to `cgo` or `_Cfunc_gtk_main` in logs). How to fix this?
 
 **A:** This is a known compatibility issue between the WebKitGTK engine, proprietary **NVIDIA drivers (v535+)**, and legacy GPU architectures (like Maxwell/GTX 750 Ti) on modern Linux distributions (e.g., Ubuntu 24.04). The interface renderer fails when initializing the hardware EGL context.
 
