@@ -26,3 +26,20 @@ https://raw.githubusercontent.com/jinndi/sync-profile-to-skeen/main/sync-profile
 5. Выполните сгенерированную команду через SSH в Entware или через WEB CLI (parse).
 6. Убедитесь, что в конфигурации SKeen (`skeen.json`) параметр `"sing_config.enable"` установлен в значение `1`.
 7. Перезапустите SKeen с помощью команды SSH `skeen restart` или через WEB CLI `exec skeen restart`.
+
+
+#### Q: В Linux приложение GUI.for.SingBox падает при запуске с ошибкой `SIGSEGV: segmentation violation` (в логах `cgo` или `_Cfunc_gtk_main`). Как исправить?
+
+**A:** Это известная проблема совместимости графического движка WebKitGTK, проприетарного драйвера **NVIDIA (версии 535+)** и старых видеокарт (например, GTX 750 Ti) в современных дистрибутивах (Ubuntu 24.04+). Рендеринг интерфейса пытается использовать аппаратный контекст EGL, что приводит к падению.
+
+Для решения проблемы необходимо принудительно переключить WebKit на софтверный рендеринг через встроенную графику Mesa, скрыв от него драйвер NVIDIA. 
+
+Создайте bash-скрипт для запуска приложения (например, `start.sh`):
+
+```bash
+#!/bin/bash
+export __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json 
+/путь_к_папке/GUI.for.SingBox
+```
+
+Сделайте скрипт исполняемым (chmod +x start.sh) и запускайте приложение через него.
