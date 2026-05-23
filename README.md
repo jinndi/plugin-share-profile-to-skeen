@@ -26,3 +26,19 @@ https://raw.githubusercontent.com/jinndi/sync-profile-to-skeen/main/sync-profile
 5. Execute the generated command via SSH in Entware or via the router's WEB CLI (using the `parse` button).
 6. Ensure that the `"sing_config.enable"` parameter is set to `1` in the SKeen configuration (`skeen.json`).
 7. Restart SKeen using the SSH command `skeen restart` or via the WEB CLI `exec skeen restart`.
+
+#### Q: The application crashes instantly with `SIGSEGV: segmentation violation` (inside `cgo` or `gtk_main`). How to fix this?
+
+**A:** This is a known compatibility issue between the WebKitGTK engine, proprietary **NVIDIA drivers (v535+)**, and legacy GPU architectures (like Maxwell/GTX 750 Ti) on modern Linux distributions (e.g., Ubuntu 24.04). The interface renderer fails when initializing the hardware EGL context.
+
+To fix this, you need to force WebKit to use software rendering via Mesa by isolating it from the NVIDIA EGL vendor library.
+
+Create a wrapper bash script (e.g., `start.sh`) to launch the app:
+
+```bash
+#!/bin/bash
+export __EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json 
+/path_to_app/GUI.for.SingBox
+```
+
+Make the script executable (chmod +x start.sh) and use it to run the application.
