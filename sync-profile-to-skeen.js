@@ -113,28 +113,38 @@ export default async (Plugin) => {
       tun.strict_route = false 
     })
 
-    const naiveKeys = ['enabled', 'server_name', 'ech']
-    config.outbounds.filter(o => o.type === 'naive' && o.tls).forEach(o => {
-      o.tls = Object.fromEntries(Object.entries(o.tls).filter(([k]) => naiveKeys.includes(k)))
-    })
-    config.outbounds
-    .filter(o => o.type === 'vless' && o.tls?.reality && !o.tls?.utls?.enabled)
-    .forEach(o => {
-      o.tls = { 
-        ...o.tls, 
-        utls: { 
-          enabled: true, 
-          fingerprint: 'chrome' 
-        } 
-      }
-    })
+    const naiveTLSKeys = ['enabled', 'server_name', 'ech']
+    const filteredOutbounds = []
 
-    config.outbounds = config.outbounds.filter(o => {
-      if (o.server === '127.0.0.1' || o.server === 'localhost') return false
-      if (o.flow === 'xtls-rprx-vision-udp443') return false 
-      if (o.tls?.enabled && o.tls?.insecure) return false
-      return true
-    })
+    for (const o of config.outbounds) {
+      if (o.server === '127.0.0.1' || o.server === 'localhost') continue
+      if (o.flow === 'xtls-rprx-vision-udp443') continue
+      if (o.tls?.enabled && o.tls?.insecure) continue
+
+      if (o.type === 'naive' && o.tls) {
+        o.tls = Object.fromEntries(
+          Object.entries(o.tls).filter(([k]) => naiveTLSKeys.includes(k))
+        )
+      }
+
+      if (o.type === 'vless' && o.tls?.reality && !o.tls?.utls?.enabled) {
+        o.tls = { 
+          ...o.tls, 
+          utls: { 
+            enabled: true, 
+            fingerprint: 'chrome' 
+          } 
+        }
+      }
+
+      if (o.type === 'selector') {
+        o.interrupt_exist_connections = true
+      }
+
+      filteredOutbounds.push(o)
+    }
+
+    config.outbounds = filteredOutbounds
 
     let changed = true
     while (changed) {
